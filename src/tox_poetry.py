@@ -37,7 +37,7 @@ def tox_configure(config):
     yield
 
     pyproject_toml_path = config.toxinidir.join('pyproject.toml')
-    if not pyproject_toml_path.exists():
+    if not pyproject_toml_path.exists() or config.skip_poetry:
         return
 
     pyproject = toml.loads(pyproject_toml_path.read())
@@ -58,8 +58,13 @@ def tox_configure(config):
     config.skipsdist = True
 
 
-@_hookimpl()
+@_hookimpl(hookwrapper=True)
 def tox_testenv_create(venv, action):
+    yield
+
+    if not _is_poetry_project:
+        return
+
     interp = venv.getsupportedinterpreter()
     env = venv._get_os_environ()  # pylint: disable=protected-access
     env["PYTHONIOENCODING"] = "UTF-8"
@@ -78,7 +83,7 @@ def tox_testenv_create(venv, action):
 def tox_testenv_install_deps(venv, action):
     yield
 
-    if not _is_poetry_project or venv.envconfig.skip_poetry is True:
+    if not _is_poetry_project:
         return
 
     cmd = [venv.getsupportedinterpreter(), '-m', 'poetry']
