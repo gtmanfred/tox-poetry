@@ -37,7 +37,7 @@ def tox_configure(config):
     yield
 
     pyproject_toml_path = config.toxinidir.join('pyproject.toml')
-    if not pyproject_toml_path.exists() or config.skip_poetry:
+    if not pyproject_toml_path.exists():
         return
 
     pyproject = toml.loads(pyproject_toml_path.read())
@@ -62,7 +62,7 @@ def tox_configure(config):
 def tox_testenv_create(venv, action):
     yield
 
-    if not _is_poetry_project:
+    if not _is_poetry_project or venv.envconfig.skip_poetry:
         return
 
     interp = venv.getsupportedinterpreter()
@@ -83,7 +83,7 @@ def tox_testenv_create(venv, action):
 def tox_testenv_install_deps(venv, action):
     yield
 
-    if not _is_poetry_project:
+    if not _is_poetry_project or venv.envconfig.skip_poetry:
         return
 
     cmd = [venv.getsupportedinterpreter(), '-m', 'poetry']
